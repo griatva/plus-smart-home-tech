@@ -1,13 +1,12 @@
 package ru.yandex.practicum.collector.service.handler.sensor;
 
-import ru.yandex.practicum.collector.model.sensorEvent.SensorEvent;
-import ru.yandex.practicum.collector.model.sensorEvent.enums.SensorEventType;
+import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 
 public interface SensorEventHandler {
 
     String TOPIC = "telemetry.sensors.v1";
 
-    SensorEventType getMessageType();
+    SensorEventProto.PayloadCase getMessageType();
 
-    void handle(SensorEvent event);
+    void handle(SensorEventProto event);
 }
