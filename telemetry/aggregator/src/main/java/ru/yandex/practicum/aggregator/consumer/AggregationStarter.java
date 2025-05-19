@@ -24,7 +24,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AggregationStarter {
 
-    private final KafkaConsumer<Void, SensorEventAvro> consumer;
+    private final KafkaConsumer<String, SensorEventAvro> consumer;
     private final AggregationService aggregationService;
     private final KafkaSnapshotProducer producer;
 
@@ -41,10 +41,10 @@ public class AggregationStarter {
             consumer.subscribe(List.of(TOPIC));
 
             while (true) {
-                ConsumerRecords<Void, SensorEventAvro> records = consumer.poll(POLL_TIMEOUT);
+                ConsumerRecords<String, SensorEventAvro> records = consumer.poll(POLL_TIMEOUT);
 
                 int count = 0;
-                for (ConsumerRecord<Void, SensorEventAvro> record : records) {
+                for (ConsumerRecord<String, SensorEventAvro> record : records) {
                     aggregationService.updateState(record.value())
                             .ifPresent(snapshot ->
                                     producer.send("telemetry.snapshots.v1", snapshot.getHubId(), snapshot)
