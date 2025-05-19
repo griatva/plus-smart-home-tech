@@ -6,6 +6,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.VoidDeserializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 
 import java.util.Properties;
 
@@ -13,7 +14,7 @@ import java.util.Properties;
 public class KafkaConsumerConfig {
 
     @Bean
-    public KafkaConsumer<Void, String> kafkaConsumer() {
+    public KafkaConsumer<Void, SensorEventAvro> kafkaConsumer() {
         Properties props = new Properties();
 
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "sensor-aggregator");
