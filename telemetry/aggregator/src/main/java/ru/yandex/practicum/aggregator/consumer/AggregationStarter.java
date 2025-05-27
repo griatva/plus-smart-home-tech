@@ -42,7 +42,9 @@ public class AggregationStarter {
 
             while (true) {
                 ConsumerRecords<String, SensorEventAvro> records = consumer.poll(POLL_TIMEOUT);
-
+                if (!records.isEmpty()) {
+                    log.info("Получено {} сообщений от Kafka", records.count());
+                }
                 int count = 0;
                 for (ConsumerRecord<String, SensorEventAvro> record : records) {
                     aggregationService.updateState(record.value())
