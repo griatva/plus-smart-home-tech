@@ -10,6 +10,7 @@ import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.aggregator.config.KafkaProperties;
 import ru.yandex.practicum.aggregator.producer.KafkaSnapshotProducer;
 import ru.yandex.practicum.aggregator.service.AggregationService;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
@@ -28,20 +29,24 @@ public class AggregationStarter {
     private final AggregationService aggregationService;
     private final KafkaSnapshotProducer producer;
 
-    private static final String TOPIC = "telemetry.sensors.v1";
-    private static final Duration POLL_TIMEOUT = Duration.ofMillis(1000);
+    private final KafkaProperties kafkaProperties;
+
+
+
 
     private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
 
 
     public void start() {
         Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
+        String topic = kafkaProperties.getConsumer().getTopic();
+        Duration pollTimeout = Duration.ofMillis(kafkaProperties.getConsumer().getPollTimeout());
 
         try {
-            consumer.subscribe(List.of(TOPIC));
+            consumer.subscribe(List.of(topic));
 
             while (true) {
-                ConsumerRecords<String, SensorEventAvro> records = consumer.poll(POLL_TIMEOUT);
+                ConsumerRecords<String, SensorEventAvro> records = consumer.poll(pollTimeout);
                 if (!records.isEmpty()) {
                     log.info("Получено {} сообщений от Kafka", records.count());
                 }
@@ -49,7 +54,9 @@ public class AggregationStarter {
                 for (ConsumerRecord<String, SensorEventAvro> record : records) {
                     aggregationService.updateState(record.value())
                             .ifPresent(snapshot ->
-                                    producer.send("telemetry.snapshots.v1", snapshot.getHubId(), snapshot)
+                                    producer.send(kafkaProperties.getProducer().getTopic(),
+                                            snapshot.getHubId(),
+                                            snapshot)
                             );
 
                     currentOffsets.put(
