@@ -38,7 +38,7 @@ services:
     image: postgres:16.1
     container_name: smart-home-db
     ports:
-      - "5432:5432"
+      - "5433:5432"
     environment:
       - POSTGRES_DB=smart_home
       - POSTGRES_USER=postgres
