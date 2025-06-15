@@ -3,6 +3,7 @@ package ru.yandex.practicum.collector.service.handler.sensor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.collector.service.kafka.KafkaProducerService;
+import ru.yandex.practicum.collector.service.kafka.KafkaProperties;
 import ru.yandex.practicum.grpc.telemetry.event.MotionSensorProto;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.MotionSensorAvro;
@@ -15,6 +16,7 @@ import java.time.Instant;
 public class MotionSensorEventHandler implements SensorEventHandler {
 
     private final KafkaProducerService service;
+    private final KafkaProperties kafkaProperties;
 
     @Override
     public SensorEventProto.PayloadCase getMessageType() {
@@ -44,6 +46,8 @@ public class MotionSensorEventHandler implements SensorEventHandler {
                 .setPayload(motionSensorAvro)
                 .build();
 
-        service.send(TOPIC, event.getId(), message);
+        String topic = kafkaProperties.getProducer().getTopicSensor();
+
+        service.send(topic, event.getId(), message);
     }
 }
