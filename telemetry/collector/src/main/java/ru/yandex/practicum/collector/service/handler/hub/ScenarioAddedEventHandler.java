@@ -3,6 +3,7 @@ package ru.yandex.practicum.collector.service.handler.hub;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.collector.service.kafka.KafkaProducerService;
+import ru.yandex.practicum.collector.service.kafka.KafkaProperties;
 import ru.yandex.practicum.grpc.telemetry.event.DeviceActionProto;
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 import ru.yandex.practicum.grpc.telemetry.event.ScenarioAddedEventProto;
@@ -17,6 +18,7 @@ import java.util.List;
 public class ScenarioAddedEventHandler implements HubEventHandler {
 
     private final KafkaProducerService service;
+    private final KafkaProperties kafkaProperties;
 
     @Override
     public HubEventProto.PayloadCase getMessageType() {
@@ -45,7 +47,9 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
                 .setPayload(scenarioAddedEventAvro)
                 .build();
 
-        service.send(TOPIC, event.getHubId(), message);
+
+        String topic = kafkaProperties.getProducer().getTopicHub();
+        service.send(topic, event.getHubId(), message);
     }
 
 
