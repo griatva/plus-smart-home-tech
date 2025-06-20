@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.yandex.practicum.interaction.client.StoreClient;
 import ru.yandex.practicum.interaction.dto.cart.ShoppingCartDto;
 import ru.yandex.practicum.interaction.dto.warehouse.AddProductToWarehouseRequest;
 import ru.yandex.practicum.interaction.dto.warehouse.AddressDto;
