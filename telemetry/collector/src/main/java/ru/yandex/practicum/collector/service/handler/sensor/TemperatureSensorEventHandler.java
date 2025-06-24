@@ -4,6 +4,7 @@ package ru.yandex.practicum.collector.service.handler.sensor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.collector.service.kafka.KafkaProducerService;
+import ru.yandex.practicum.collector.service.kafka.KafkaProperties;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 import ru.yandex.practicum.grpc.telemetry.event.TemperatureSensorProto;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
@@ -16,6 +17,7 @@ import java.time.Instant;
 public class TemperatureSensorEventHandler implements SensorEventHandler {
 
     private final KafkaProducerService service;
+    private final KafkaProperties kafkaProperties;
 
     @Override
     public SensorEventProto.PayloadCase getMessageType() {
@@ -47,6 +49,8 @@ public class TemperatureSensorEventHandler implements SensorEventHandler {
                 .setPayload(temperatureSensorAvro)
                 .build();
 
-        service.send(TOPIC, event.getId(), message);
+        String topic = kafkaProperties.getProducer().getTopicSensor();
+
+        service.send(topic, event.getId(), message);
     }
 }
