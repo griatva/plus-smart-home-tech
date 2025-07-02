@@ -13,7 +13,7 @@ import ru.yandex.practicum.interaction.dto.store.ProductDto;
 import ru.yandex.practicum.interaction.enums.ProductCategory;
 import ru.yandex.practicum.interaction.enums.ProductState;
 import ru.yandex.practicum.interaction.enums.QuantityState;
-import ru.yandex.practicum.store.exception.ProductNotFoundException;
+import ru.yandex.practicum.interaction.exception.ProductNotFoundException;
 import ru.yandex.practicum.store.mapper.ProductMapper;
 import ru.yandex.practicum.store.model.Product;
 import ru.yandex.practicum.store.repository.StoreRepository;
@@ -95,5 +95,11 @@ public class StoreServiceImpl implements StoreService {
     private Product getById(UUID productId) {
         return repository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Товар с id " + productId + " не найден в БД!"));
+    }
+
+    @Override
+    public List<ProductDto> getProductListByIds(List<UUID> productIds) {
+        List<Product> productList = repository.findAllByProductIdIn(productIds);
+        return ProductMapper.toDtoList(productList);
     }
 }

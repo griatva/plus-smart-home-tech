@@ -15,6 +15,7 @@ import ru.yandex.practicum.interaction.enums.ProductCategory;
 import ru.yandex.practicum.interaction.enums.QuantityState;
 import ru.yandex.practicum.store.service.StoreService;
 
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -66,5 +67,11 @@ public class StoreController {
     public ResponseEntity<ProductDto> getProductById(@PathVariable UUID productId) {
         log.info("Запрос на получение товара по id: {}", productId);
         return ResponseEntity.ok(service.getProductById(productId));
+    }
+
+    @PostMapping("/list")
+    ResponseEntity<List<ProductDto>> getProductListByIds(@RequestBody List<UUID> productIds) {
+        log.info("Запрос на получение списка товаров по их id: {}", productIds);
+        return ResponseEntity.ok(service.getProductListByIds(productIds));
     }
 }

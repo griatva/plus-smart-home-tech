@@ -5,16 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.interaction.dto.cart.ShoppingCartDto;
-import ru.yandex.practicum.interaction.dto.warehouse.AddProductToWarehouseRequest;
-import ru.yandex.practicum.interaction.dto.warehouse.AddressDto;
-import ru.yandex.practicum.interaction.dto.warehouse.BookedProductsDto;
-import ru.yandex.practicum.interaction.dto.warehouse.NewProductInWarehouseRequest;
-import ru.yandex.practicum.warehouse.exception.NoSpecifiedProductInWarehouseException;
-import ru.yandex.practicum.warehouse.exception.NotFoundException;
-import ru.yandex.practicum.warehouse.exception.ProductInShoppingCartLowQuantityInWarehouse;
-import ru.yandex.practicum.warehouse.exception.SpecifiedProductAlreadyInWarehouseException;
+import ru.yandex.practicum.interaction.dto.warehouse.*;
+import ru.yandex.practicum.interaction.exception.*;
 import ru.yandex.practicum.warehouse.mapper.WarehouseItemMapper;
+import ru.yandex.practicum.warehouse.model.OrderBooking;
 import ru.yandex.practicum.warehouse.model.WarehouseItem;
+import ru.yandex.practicum.warehouse.repository.BookingRepository;
 import ru.yandex.practicum.warehouse.repository.WarehouseRepository;
 
 import java.security.SecureRandom;
@@ -33,18 +29,21 @@ public class WarehouseServiceImpl implements WarehouseService {
         CURRENT_ADDRESS = ADDRESSES[rnd.nextInt(2)];
     }
 
-    private final WarehouseRepository repository;
+    private final WarehouseRepository warehouseRepository;
+    private final BookingRepository bookingRepository;
+
 
     @Transactional
     @Override
     public void createNewItem(NewProductInWarehouseRequest request) {
 
-        Optional<WarehouseItem> item = repository.findByProductId(request.getProductId());
+        Optional<WarehouseItem> item = warehouseRepository.findByProductId(request.getProductId());
         if (item.isPresent()) {
-            throw new SpecifiedProductAlreadyInWarehouseException("Товар с таким id: {} уже существует в БД");
+            throw new SpecifiedProductAlreadyInWarehouseException(
+                    "Товар с таким id: " + request.getProductId() + " уже существует в БД");
         }
 
-        repository.save(WarehouseItemMapper.toNewEntity(request));
+        warehouseRepository.save(WarehouseItemMapper.toNewEntity(request));
     }
 
     @Transactional
@@ -53,10 +52,10 @@ public class WarehouseServiceImpl implements WarehouseService {
 
         Map<UUID, Long> products = cartDto.getProducts();
         List<UUID> productIds = new ArrayList<>(products.keySet());
-        List<WarehouseItem> items = repository.findAllByProductIdIn(productIds);
+        List<WarehouseItem> items = warehouseRepository.findAllByProductIdIn(productIds);
 
         if (items.size() < productIds.size()) {
-            throw new NotFoundException("Не все товары найдены на складе");
+            throw new ProductInShoppingCartNotInWarehouse("Не все товары найдены на складе");
         }
 
         checkProductQuantity(items, products);
@@ -112,12 +111,12 @@ public class WarehouseServiceImpl implements WarehouseService {
     @Transactional
     @Override
     public void addProduct(AddProductToWarehouseRequest request) {
-        WarehouseItem item = repository.findByProductId(request.getProductId())
+        WarehouseItem item = warehouseRepository.findByProductId(request.getProductId())
                 .orElseThrow(() -> new NoSpecifiedProductInWarehouseException("Нет информации о товаре на складе"));
 
         item.setQuantity(item.getQuantity() + request.getQuantity());
 
-        repository.save(item);
+        warehouseRepository.save(item);
     }
 
     @Override
@@ -129,5 +128,79 @@ public class WarehouseServiceImpl implements WarehouseService {
                 CURRENT_ADDRESS,
                 CURRENT_ADDRESS
         );
+    }
+
+    @Transactional
+    @Override
+    public void shippedToDelivery(ShippedToDeliveryRequest request) {
+
+        OrderBooking orderBooking = bookingRepository.findByOrderId(request.getOrderId())
+                .orElseThrow(() -> new NotFoundException("Бронь для этого заказа не найдена"));
+
+        orderBooking.setDeliveryId(request.getDeliveryId());
+        bookingRepository.save(orderBooking);
+    }
+
+    @Transactional
+    @Override
+    public void acceptReturn(ProductReturnMapRequest request) {
+
+        Map<UUID, Long> productsForReturn = request.getProducts();
+
+        if (productsForReturn == null || productsForReturn.isEmpty()) {
+            throw new IllegalArgumentException("Нет товаров для возврата.");
+        }
+
+        List<WarehouseItem> items = warehouseRepository.findAllByProductIdIn(new ArrayList<>(productsForReturn.keySet()));
+
+        if (items.size() != productsForReturn.size()) {
+            throw new IllegalArgumentException("Некоторые товары из возврата не найдены в базе склада.");
+        }
+
+        for (WarehouseItem item : items) {
+            Long returnQuantity = productsForReturn.get(item.getProductId());
+            if (returnQuantity == null) {
+                continue;
+            }
+            item.setQuantity(item.getQuantity() + returnQuantity);
+        }
+        warehouseRepository.saveAll(items);
+    }
+
+
+    @Transactional
+    @Override
+    public BookedProductsDto assemblyProductsForOrder(AssemblyProductsForOrderRequest request) {
+
+        Map<UUID, Long> products = request.getProducts();
+        List<UUID> productIds = new ArrayList<>(products.keySet());
+        List<WarehouseItem> items = warehouseRepository.findAllByProductIdIn(productIds);
+
+        if (items.size() < productIds.size()) {
+            throw new NotFoundException("Не все товары найдены на складе");
+        }
+
+        //проверяем количество на складе
+        checkProductQuantity(items, products);
+
+        //уменьшаем количество на складе
+        for (WarehouseItem item : items) {
+            Long bookQuantity = products.get(item.getProductId());
+            if (bookQuantity == null) {
+                continue;
+            }
+            item.setQuantity(item.getQuantity() - bookQuantity);
+        }
+        warehouseRepository.saveAll(items);
+
+
+        //создаем и сохраняем бронь
+        OrderBooking orderBooking = OrderBooking.builder()
+                .orderId(request.getOrderId())
+                .products(request.getProducts())
+                .build();
+        bookingRepository.save(orderBooking);
+
+        return getBookedProductsDto(items);
     }
 }
