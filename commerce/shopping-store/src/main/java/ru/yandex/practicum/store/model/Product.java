@@ -33,7 +33,7 @@ public class Product {
     private String description;
 
     @Column(name = "image_src")
-    private String imageSrc; // Ссылка на картинку во внешнем хранилище или SVG
+    private String imageSrc;
 
     @Column(name = "quantity_state", nullable = false)
     @Enumerated(EnumType.STRING)

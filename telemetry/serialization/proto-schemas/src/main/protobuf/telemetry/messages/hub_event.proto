@@ -5,7 +5,6 @@ package telemetry.message.event;
 option java_multiple_files = true;
 option java_package = "ru.yandex.practicum.grpc.telemetry.event";
 
-
 import "google/protobuf/timestamp.proto";
 
 message HubEventProto {
@@ -20,12 +19,12 @@ message HubEventProto {
 }
 
 enum DeviceTypeProto {
-	// Варианты значений enum DeviceTypeProto
-	MOTION_SENSOR = 0;      // датчик движения
-	TEMPERATURE_SENSOR = 1; // датчик температуры
-	LIGHT_SENSOR = 2;       // датчик освещённости
-	CLIMATE_SENSOR = 3;     // датчик контроля климата
-	SWITCH_SENSOR = 4;      // переключатель
+    // Available values for DeviceTypeProto
+    MOTION_SENSOR = 0;      // motion sensor
+    TEMPERATURE_SENSOR = 1; // temperature sensor
+    LIGHT_SENSOR = 2;       // light sensor
+    CLIMATE_SENSOR = 3;     // climate control sensor
+    SWITCH_SENSOR = 4;      // switch
 }
 
 message DeviceAddedEventProto {
@@ -37,9 +36,7 @@ message DeviceRemovedEventProto {
     string id = 1;
 }
 
-
-
-// события создания/удаления сценариев
+// scenario create/remove events
 
 enum ConditionTypeProto {
   MOTION = 0;
@@ -74,19 +71,19 @@ enum ActionTypeProto {
 }
 
 message DeviceActionProto {
-  string sensor_id = 1; // идентификатор устройства
+  string sensor_id = 1; // device identifier
   ActionTypeProto type = 2;
   optional int32 value = 3;
 }
 
 message ScenarioAddedEventProto {
-  string name = 1; // название сценария, уникальное в рамках хаба
-  repeated ScenarioConditionProto condition = 2; // набор условий активации сценария
-  repeated DeviceActionProto action = 3; // набор действий при активации сценария
+  string name = 1; // scenario name, unique within the hub
+  repeated ScenarioConditionProto condition = 2; // activation conditions
+  repeated DeviceActionProto action = 3; // actions to execute upon activation
 }
 
 message ScenarioRemovedEventProto {
-  string name = 1; // название сценария, уникальное в рамках хаба
+  string name = 1; // scenario name, unique within the hub
 }
 
 message DeviceActionRequest {
@@ -95,5 +92,3 @@ message DeviceActionRequest {
   DeviceActionProto action = 3;
   google.protobuf.Timestamp timestamp = 4;
 }
-
-

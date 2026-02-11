@@ -23,11 +23,11 @@ public class AggregationService {
         String hubId = event.getHubId();
         String sensorId = event.getId();
 
-        log.info("Получено событие от датчика: hubId={}, sensorId={}, timestamp={}, payload={}",
+        log.info("Received sensor event: hubId={}, sensorId={}, timestamp={}, payload={}",
                 hubId, sensorId, event.getTimestamp(), event.getPayload());
 
         SensorsSnapshotAvro snapshot = snapshots.computeIfAbsent(hubId, hubIdKey -> {
-            log.info("Создаю новый снапшот для hubId={}", hubIdKey);
+            log.info("Creating new snapshot for hubId={}", hubIdKey);
             SensorsSnapshotAvro newSnapshot = new SensorsSnapshotAvro();
             newSnapshot.setHubId(hubIdKey);
             newSnapshot.setTimestamp(event.getTimestamp());
@@ -43,7 +43,7 @@ public class AggregationService {
             boolean isSameData = event.getPayload().equals(oldState.getData());
 
             if (isOlderTimestamp || isSameData) {
-                log.info("Игнорируем событие: старое или дублирующее. hubId={}, sensorId={}, eventTimestamp={}",
+                log.info("Ignoring event: outdated or duplicate. hubId={}, sensorId={}, eventTimestamp={}",
                         hubId, sensorId, event.getTimestamp());
                 return Optional.empty();
             }
@@ -56,7 +56,7 @@ public class AggregationService {
         sensorsState.put(sensorId, newState);
         snapshot.setTimestamp(event.getTimestamp());
 
-        log.info("Обновлён снапшот hubId={}, sensorId={}, newTimestamp={}, newData={}",
+        log.info("Snapshot updated: hubId={}, sensorId={}, newTimestamp={}, newData={}",
                 hubId, sensorId, newState.getTimestamp(), newState.getData());
 
         return Optional.of(snapshot);

@@ -14,11 +14,12 @@ public class BookedProductsDto {
 
     @NotNull
     @Min(1)
-    private Double deliveryWeight; // общий вес доставки
+    private Double deliveryWeight; // total delivery weight
 
     @NotNull
-    private Double deliveryVolume; // общий объем доставки
+    private Double deliveryVolume; // total delivery volume
 
     @NotNull
-    private Boolean fragile; // есть ли хрупкие вещи в доставке
+    private Boolean fragile; // indicates whether the delivery contains fragile items
+
 }

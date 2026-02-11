@@ -26,7 +26,7 @@ public class ProductDto {
     @NotBlank
     private String description;
 
-    private String imageSrc; // Ссылка на картинку во внешнем хранилище или SVG
+    private String imageSrc; // Link to an image stored in external storage or an SVG
 
     @NotNull
     private QuantityState quantityState; // ENDED, FEW, ENOUGH, MANY

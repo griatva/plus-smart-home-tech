@@ -33,6 +33,6 @@ public class ShoppingCart {
     @CollectionTable(name = "shopping_cart_products", joinColumns = @JoinColumn(name = "shopping_cart_id"))
     @MapKeyColumn(name = "product_id")
     @Column(name = "quantity")
-    private Map<UUID, Long> products; // productId -> quantity (сколько хочет покупатель)
+    private Map<UUID, Long> products; // productId -> quantity (requested by the customer)
 
 }

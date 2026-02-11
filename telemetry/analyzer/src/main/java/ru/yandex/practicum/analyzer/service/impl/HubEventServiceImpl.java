@@ -53,7 +53,7 @@ public class HubEventServiceImpl implements HubEventService {
         } else if (payload instanceof ScenarioRemovedEventAvro scenarioRemoved) {
             removeScenario(hubId, scenarioRemoved);
         } else {
-            log.warn("Неизвестный тип payload: {}", payload.getClass());
+            log.warn("Unknown payload type: {}", payload.getClass());
         }
     }
 
@@ -61,12 +61,12 @@ public class HubEventServiceImpl implements HubEventService {
     public void addDevice(String hubId, DeviceAddedEventAvro avro) {
 
         if (sensorRepository.existsByIdAndHubId(avro.getId(), hubId)) {
-            throw new ConflictException("Такой датчик уже существует");
+            throw new ConflictException("Sensor already exists");
         }
 
         Sensor sensor = sensorMapper.toEntity(hubId, avro);
         sensorRepository.save(sensor);
-        log.info("Сенсор добавлен: id={}, hubId={}, type={}", avro.getId(), hubId, avro.getType());
+        log.info("Sensor added: id={}, hubId={}, type={}", avro.getId(), hubId, avro.getType());
     }
 
     @Override
@@ -75,23 +75,23 @@ public class HubEventServiceImpl implements HubEventService {
 
         if (scenarioConditionRepository.existsBySensorId(sensorId) ||
                 scenarioActionRepository.existsBySensorId(sensorId)) {
-            throw new IllegalStateException("Нельзя удалить сенсор: он используется в сценариях.");
+            throw new IllegalStateException("Cannot delete sensor: it is used in scenarios.");
         }
         sensorRepository.deleteById(sensorId);
-        log.info("Сенсор удалён: id={}", sensorId);
+        log.info("Sensor deleted: id={}", sensorId);
     }
 
     @Override
     @Transactional
     public void addScenario(String hubId, ScenarioAddedEventAvro avro) {
 
-        // Собираем все уникальные sensorId
+        // Collect all unique sensorIds
         Set<String> sensorIds = Stream.concat(
                 avro.getConditions().stream().map(ScenarioConditionAvro::getSensorId),
                 avro.getActions().stream().map(DeviceActionAvro::getSensorId)
         ).collect(Collectors.toSet());
 
-        // Проверяем наличие всех сенсоров
+        // Verify that all sensors exist
         List<Sensor> sensors = sensorRepository.findAllById(sensorIds);
 
         Set<String> found = sensors.stream().map(Sensor::getId).collect(Collectors.toSet());
@@ -99,35 +99,35 @@ public class HubEventServiceImpl implements HubEventService {
         missing.removeAll(found);
 
         if (!missing.isEmpty()) {
-            throw new IllegalArgumentException("Сенсоры не найдены в хабе " + hubId + ": " + missing);
+            throw new IllegalArgumentException("Sensors not found in hub " + hubId + ": " + missing);
         }
 
-        // Формируем Map для быстрого доступа
+        // Build a Map for quick access
         Map<String, Sensor> sensorMap = sensors.stream()
                 .collect(Collectors.toMap(Sensor::getId, s -> s));
 
-        // Создаём и сохраняем сценарий
+        // Create and save scenario
         Scenario scenario = scenarioMapper.toEntity(hubId, avro);
         scenarioRepository.save(scenario);
 
-        // Создаём и сохраняем условия
+        // Create and save conditions
         List<ScenarioCondition> conditionLinks =
                 scenarioMapper.toConditionLinks(scenario, avro.getConditions(), sensorMap);
         conditionRepository.saveAll(conditionLinks.stream().map(ScenarioCondition::getCondition).toList());
         scenarioConditionRepository.saveAll(conditionLinks);
 
-        // Создаём и сохраняем действия
+        // Create and save actions
         List<ScenarioAction> actionLinks = scenarioMapper.toActionLinks(scenario, avro.getActions(), sensorMap);
         actionRepository.saveAll(actionLinks.stream().map(ScenarioAction::getAction).toList());
         scenarioActionRepository.saveAll(actionLinks);
 
-        log.info("Сценарий '{}' успешно добавлен в хаб '{}'. Условий: {}, действий: {}",
+        log.info("Scenario '{}' successfully added to hub '{}'. Conditions: {}, actions: {}",
                 avro.getName(), hubId, conditionLinks.size(), actionLinks.size());
     }
 
     @Override
     public void removeScenario(String hubId, ScenarioRemovedEventAvro avro) {
         scenarioRepository.deleteByHubIdAndName(hubId, avro.getName());
-        log.info("Сценарий '{}' удалён из хаба '{}'", avro.getName(), hubId);
+        log.info("Scenario '{}' removed from hub '{}'", avro.getName(), hubId);
     }
 }

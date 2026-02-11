@@ -1,6 +1,5 @@
 package ru.yandex.practicum.cart.controller;
 
-
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,38 +25,36 @@ public class CartController {
 
     @GetMapping
     public ResponseEntity<ShoppingCartDto> getCart(@RequestParam String username) {
-        log.info("Запрос на получение корзины пользователем {}", username);
+        log.info("Received request to get shopping cart for user: {}", username);
         return ResponseEntity.ok(service.getCart(username));
     }
 
     @PutMapping
     public ResponseEntity<ShoppingCartDto> putProductsToCart(@RequestParam String username,
                                                              @RequestBody Map<UUID, Long> products) {
-        log.info("Запрос на добавление товаров {} в корзину пользователем {}", products, username);
+        log.info("Received request to add products {} to shopping cart for user: {}", products, username);
         return ResponseEntity.ok(service.putProductsToCart(username, products));
     }
 
     @DeleteMapping
     public ResponseEntity<Void> deactivateCart(@RequestParam String username) {
-        log.info("Запрос на деактивацию корзины пользователем {}", username);
+        log.info("Received request to deactivate shopping cart for user: {}", username);
         service.deactivateCart(username);
         return ResponseEntity.ok().build();
     }
 
-
     @PostMapping("/remove")
     public ResponseEntity<ShoppingCartDto> removeProductFromCart(@RequestParam String username,
                                                                  @RequestBody List<UUID> productIds) {
-        log.info("Запрос на удаление продуктов с id: {} из корзины пользователем {}", productIds, username);
+        log.info("Received request to remove products with ids {} from shopping cart for user: {}", productIds, username);
         return ResponseEntity.ok(service.removeProductFromCart(username, productIds));
     }
-
 
     @PostMapping("/change-quantity")
     public ResponseEntity<ShoppingCartDto> changeQuantityInCart(
             @RequestParam String username,
             @RequestBody @Valid ChangeProductQuantityRequest request) {
-        log.info("Запрос на изменение количества продукта: {} в корзине пользователем {}", request, username);
+        log.info("Received request to change product quantity {} in shopping cart for user: {}", request, username);
         return ResponseEntity.ok(service.changeQuantityInCart(username, request));
     }
 }

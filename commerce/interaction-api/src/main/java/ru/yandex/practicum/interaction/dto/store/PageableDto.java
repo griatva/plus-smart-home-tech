@@ -13,10 +13,10 @@ import java.util.List;
 @Builder
 public class PageableDto {
 
-    @Min(value = 0, message = "Минимальное значение поля page = 0")
+    @Min(value = 0, message = "Minimum value for page is 0")
     private Integer page;
 
-    @Min(value = 1, message = "Минимальное значение поля size = 1")
+    @Min(value = 1, message = "Minimum value for size is 1")
     private Integer size;
 
     private List<String> sort;
