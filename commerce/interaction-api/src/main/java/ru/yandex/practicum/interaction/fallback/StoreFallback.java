@@ -18,19 +18,19 @@ public class StoreFallback implements StoreClient {
 
     @Override
     public Page<ProductDto> getProductsByCategoryPageable(ProductCategory category, PageableDto pageableDto) {
-        System.out.println("Fallback: getProductsByCategoryPageable — сервис магазина недоступен, возвращаем пустую страницу.");
+        System.out.println("Fallback: getProductsByCategoryPageable — store service is unavailable, returning an empty page.");
         return new PageImpl<>(Collections.emptyList());
     }
 
     @Override
     public ProductDto createProduct(ProductDto productDto) {
-        System.out.println("Fallback: createProduct — сервис магазина недоступен, товар не создан.");
+        System.out.println("Fallback: createProduct — store service is unavailable, product was not created.");
         return emptyProductDto();
     }
 
     @Override
     public ProductDto updateProduct(ProductDto productDto) {
-        System.out.println("Fallback: updateProduct — сервис магазина недоступен, товар не обновлен.");
+        System.out.println("Fallback: updateProduct — store service is unavailable, product was not updated.");
         return ProductDto.builder()
                 .productId(productDto != null ? productDto.getProductId() : null)
                 .build();
@@ -38,25 +38,25 @@ public class StoreFallback implements StoreClient {
 
     @Override
     public Boolean removeProduct(UUID productId) {
-        System.out.println("Fallback: removeProduct — сервис магазина недоступен, товар не удален.");
+        System.out.println("Fallback: removeProduct — store service is unavailable, product was not removed.");
         return false;
     }
 
     @Override
     public Boolean updateQuantityState(UUID productId, QuantityState quantityState) {
-        System.out.println("Fallback: updateQuantityState — сервис магазина недоступен, состояние количества не обновлено.");
+        System.out.println("Fallback: updateQuantityState — store service is unavailable, quantity state was not updated.");
         return false;
     }
 
     @Override
     public ProductDto getProductById(UUID productId) {
-        System.out.println("Fallback: getProductById — сервис магазина недоступен, возвращаем пустой товар.");
+        System.out.println("Fallback: getProductById — store service is unavailable, returning an empty product.");
         return emptyProductDto();
     }
 
     @Override
     public List<ProductDto> getProductListByIds(List<UUID> productIds) {
-        System.out.println("Fallback: getProductListByIds — сервис магазина недоступен, возвращаем пустой список.");
+        System.out.println("Fallback: getProductListByIds — store service is unavailable, returning an empty list.");
         return Collections.emptyList();
     }
 

@@ -14,30 +14,30 @@ public class CartFallback implements CartClient {
 
     @Override
     public ShoppingCartDto getCart(String userName) {
-        System.out.println("Fallback: getCart — корзина недоступна, возвращаем пустую корзину.");
+        System.out.println("Fallback: getCart — cart service is unavailable, returning an empty cart.");
         return emptyCart();
     }
 
     @Override
     public ShoppingCartDto putProductsToCart(String userName, Map<UUID, Long> products) {
-        System.out.println("Fallback: putProductsToCart — корзина недоступна, товары не добавлены.");
+        System.out.println("Fallback: putProductsToCart — cart service is unavailable, products were not added.");
         return emptyCart();
     }
 
     @Override
     public void deactivateCart(String userName) {
-        System.out.println("Fallback: deactivateCart — корзина недоступна, деактивация не выполнена.");
+        System.out.println("Fallback: deactivateCart — cart service is unavailable, deactivation was not performed.");
     }
 
     @Override
     public ShoppingCartDto removeProductFromCart(String userName, List<UUID> productIds) {
-        System.out.println("Fallback: removeProductFromCart — корзина недоступна, товары не удалены.");
+        System.out.println("Fallback: removeProductFromCart — cart service is unavailable, products were not removed.");
         return emptyCart();
     }
 
     @Override
     public ShoppingCartDto changeQuantityInCart(String userName, ChangeProductQuantityRequest request) {
-        System.out.println("Fallback: changeQuantityInCart — корзина недоступна, количество товаров не изменено.");
+        System.out.println("Fallback: changeQuantityInCart — cart service is unavailable, product quantities were not changed.");
         return emptyCart();
     }
 

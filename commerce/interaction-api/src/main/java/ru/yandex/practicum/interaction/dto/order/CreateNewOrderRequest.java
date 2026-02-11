@@ -12,9 +12,9 @@ import ru.yandex.practicum.interaction.dto.warehouse.AddressDto;
 @Builder
 public class CreateNewOrderRequest {
 
-    @NotNull(message = "Корзина не может быть null")
+    @NotNull(message = "Shopping cart must not be null")
     private ShoppingCartDto shoppingCart;
 
-    @NotNull(message = "Адрес доставки не может быть null")
+    @NotNull(message = "Delivery address must not be null")
     private AddressDto deliveryAddress;
 }

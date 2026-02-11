@@ -25,15 +25,13 @@ public class SnapshotProcessor {
     private final KafkaConsumer<String, SensorsSnapshotAvro> snapshotKafkaConsumer;
     private final SnapshotService service;
 
-
     private static final String TOPIC = "telemetry.snapshots.v1";
     private static final Duration POLL_TIMEOUT = Duration.ofMillis(1000);
 
     private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
 
-
     public void start() {
-        log.info("SnapshotProcessor запущен в потоке: {}", Thread.currentThread().getName());
+        log.info("SnapshotProcessor started on thread: {}", Thread.currentThread().getName());
 
         Runtime.getRuntime().addShutdownHook(new Thread(snapshotKafkaConsumer::wakeup));
 
@@ -43,18 +41,18 @@ public class SnapshotProcessor {
             while (true) {
                 ConsumerRecords<String, SensorsSnapshotAvro> records = snapshotKafkaConsumer.poll(POLL_TIMEOUT);
                 if (!records.isEmpty()) {
-                    log.info("Получено {} снапшотов от Kafka", records.count());
+                    log.info("Received {} snapshots from Kafka", records.count());
                 }
 
                 int count = 0;
                 for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
 
                     try {
-                        log.info("Обработка снапшота: ключ={}, offset={}, partition={}",
+                        log.info("Processing snapshot: key={}, offset={}, partition={}",
                                 record.key(), record.offset(), record.partition());
                         service.handleSnapshotRecord(record);
                     } catch (Exception e) {
-                        log.error("Ошибка при обработке снапшота: {}", record, e);
+                        log.error("Error while processing snapshot: {}", record, e);
                     }
 
                     currentOffsets.put(
@@ -70,14 +68,14 @@ public class SnapshotProcessor {
                 currentOffsets.clear();
             }
         } catch (WakeupException ignored) {
-            log.info("Получен сигнал на завершение работы SnapshotProcessor.");
+            log.info("Shutdown signal received for SnapshotProcessor.");
         } catch (Exception e) {
-            log.error("Ошибка во время обработки снапшотов", e);
+            log.error("Error while processing snapshots", e);
         } finally {
             try {
                 snapshotKafkaConsumer.commitSync(currentOffsets);
             } finally {
-                log.info("Закрываем SnapshotConsumer");
+                log.info("Closing Snapshot consumer");
                 snapshotKafkaConsumer.close();
             }
         }
@@ -86,9 +84,8 @@ public class SnapshotProcessor {
     private void commitAsyncSafe() {
         snapshotKafkaConsumer.commitAsync(currentOffsets, (offsets, ex) -> {
             if (ex != null) {
-                log.warn("Ошибка при коммите оффсетов SnapshotProcessor: {}", offsets, ex);
+                log.warn("Error committing offsets in SnapshotProcessor: {}", offsets, ex);
             }
         });
     }
-
 }

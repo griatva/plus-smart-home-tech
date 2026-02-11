@@ -42,7 +42,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         checkInfo(orderDto);
         if (orderDto.getTotalPrice() == null) {
-            throw new NotEnoughInfoInOrderToCalculateException("Для оплаты необходима общая стоимость заказа");
+            throw new NotEnoughInfoInOrderToCalculateException("Total order price is required to create a payment");
         }
 
         Payment payment = Payment.builder()
@@ -72,7 +72,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public void markPaymentSuccess(UUID paymentId) {
         if (paymentId == null) {
-            throw new IllegalArgumentException("paymentId не должен быть null");
+            throw new IllegalArgumentException("paymentId must not be null");
         }
         Payment payment = findById(paymentId);
         payment.setPaymentState(PaymentState.SUCCESS);
@@ -86,17 +86,15 @@ public class PaymentServiceImpl implements PaymentService {
 
         Map<UUID, Long> products = orderDto.getProducts();
         if (products == null || products.isEmpty()) {
-            throw new NotEnoughInfoInOrderToCalculateException("Нет товаров для расчета их стоимости");
+            throw new NotEnoughInfoInOrderToCalculateException("No products provided to calculate product cost");
         }
 
         List<UUID> productIds = new ArrayList<>(products.keySet());
         List<ProductDto> productDtoList = storeClient.getProductListByIds(productIds);
 
-
         if (productDtoList.isEmpty()) {
-            throw new ProductNotFoundException("Ни один из товаров не найден в магазине, невозможно рассчитать стоимость");
+            throw new ProductNotFoundException("None of the products were found in the store; unable to calculate cost");
         }
-
 
         return productDtoList.stream()
                 .map(productDto -> {
@@ -110,7 +108,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public void markPaymentFailed(UUID paymentId) {
         if (paymentId == null) {
-            throw new IllegalArgumentException("paymentId не должен быть null");
+            throw new IllegalArgumentException("paymentId must not be null");
         }
         Payment payment = findById(paymentId);
         payment.setPaymentState(PaymentState.FAILED);
@@ -120,27 +118,30 @@ public class PaymentServiceImpl implements PaymentService {
 
     private Payment findById(UUID paymentId) {
         return paymentRepository.findByPaymentId(paymentId)
-                .orElseThrow(() -> new NotFoundException("Такого платежа нет в базе"));
+                .orElseThrow(() -> new NotFoundException(
+                        "Payment with the specified id was not found"
+                ));
     }
 
     private void checkInfo(OrderDto orderDto) {
         if (paymentRepository.existsByOrderId(orderDto.getOrderId())) {
-            throw new ConflictException("Платеж для заказа с ID: " + orderDto.getOrderId() + " уже существует");
+            throw new ConflictException("Payment for order with id " + orderDto.getOrderId() + " already exists");
         }
 
         if (orderDto.getProducts() == null || orderDto.getProducts().isEmpty()) {
-            throw new NotEnoughInfoInOrderToCalculateException("Для оплаты необходимо наличие товаров в заказе");
+            throw new NotEnoughInfoInOrderToCalculateException("Order must contain products to create a payment");
         }
 
         if (orderDto.getOrderId() == null) {
-            throw new NotEnoughInfoInOrderToCalculateException("Для оплаты необходим orderId");
+            throw new NotEnoughInfoInOrderToCalculateException("orderId is required to create a payment");
         }
 
         if (orderDto.getDeliveryPrice() == null) {
-            throw new NotEnoughInfoInOrderToCalculateException("Для оплаты необходима стоимость доставки");
+            throw new NotEnoughInfoInOrderToCalculateException("Delivery price is required to create a payment");
         }
+
         if (orderDto.getProductPrice() == null) {
-            throw new NotEnoughInfoInOrderToCalculateException("Для оплаты необходима стоимость товаров");
+            throw new NotEnoughInfoInOrderToCalculateException("Product price is required to create a payment");
         }
     }
 }

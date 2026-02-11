@@ -30,48 +30,46 @@ public class StoreController {
     @GetMapping
     public ResponseEntity<Page<ProductDto>> getProductsByCategoryPageable(
             @RequestParam @Valid ProductCategory category, @Valid PageableDto pageableDto) {
-        log.info("Запрос на получение списка товаров. Category = {}, pageable = {}", category, pageableDto);
+        log.info("Request to retrieve products list. Category = {}, pageable = {}", category, pageableDto);
         return ResponseEntity.ok(service.getProductsByCategoryPageable(category, pageableDto));
     }
 
     @PutMapping
     public ResponseEntity<ProductDto> createProduct(@RequestBody @Valid ProductDto productDto) {
-        log.info("Запрос на создание нового товара {}", productDto);
+        log.info("Request to create a new product: {}", productDto);
         return ResponseEntity.ok(service.createProduct(productDto));
     }
 
     @PostMapping
     public ResponseEntity<ProductDto> updateProduct(@RequestBody @Valid ProductDto productDto) {
-        log.info("Запрос на обновление товара {}", productDto);
+        log.info("Request to update product: {}", productDto);
         return ResponseEntity.ok(service.updateProduct(productDto));
     }
 
-
     @PostMapping("/removeProductFromStore")
     public ResponseEntity<Boolean> removeProduct(@RequestBody UUID productId) {
-        log.info("Запрос на удаление товара с id: {}", productId);
+        log.info("Request to remove product with id: {}", productId);
         return ResponseEntity.ok(service.deactivateProduct(productId));
     }
-
 
     @PostMapping("/quantityState")
     public ResponseEntity<Boolean> updateQuantityState(
             @RequestParam @NotNull UUID productId,
             @RequestParam @NotNull QuantityState quantityState
     ) {
-        log.info("Запрос на изменение статуса остатка товара: productId={}, quantityState={}", productId, quantityState);
+        log.info("Request to update product quantity state: productId={}, quantityState={}", productId, quantityState);
         return ResponseEntity.ok(service.updateQuantityState(productId, quantityState));
     }
 
     @GetMapping("/{productId}")
     public ResponseEntity<ProductDto> getProductById(@PathVariable UUID productId) {
-        log.info("Запрос на получение товара по id: {}", productId);
+        log.info("Request to retrieve product by id: {}", productId);
         return ResponseEntity.ok(service.getProductById(productId));
     }
 
     @PostMapping("/list")
     ResponseEntity<List<ProductDto>> getProductListByIds(@RequestBody List<UUID> productIds) {
-        log.info("Запрос на получение списка товаров по их id: {}", productIds);
+        log.info("Request to retrieve products by ids: {}", productIds);
         return ResponseEntity.ok(service.getProductListByIds(productIds));
     }
 }

@@ -47,8 +47,7 @@ public class SnapshotServiceImpl implements SnapshotService {
         SensorsSnapshotAvro snapshotAvro = record.value();
         Map<String, SensorStateAvro> sensorStates = snapshotAvro.getSensorsState(); // key = sensorId
 
-
-        // Проверяем, что все сенсоры из снапшота существуют в БД
+        // Verify that all sensors from the snapshot exist in the database
         List<String> sensorIds = new ArrayList<>(sensorStates.keySet());
         List<Sensor> knownSensors = sensorRepository.findAllById(sensorIds);
         Map<String, Sensor> sensorMap = knownSensors.stream()
@@ -56,29 +55,30 @@ public class SnapshotServiceImpl implements SnapshotService {
 
         for (String sensorId : sensorIds) {
             if (!sensorMap.containsKey(sensorId)) {
-                log.warn("Сенсор {} не найден в БД! Ни один сценарий не активирован по этому сенсору!", sensorId);
+                log.warn("Sensor {} was not found in the database. No scenarios will be triggered for this sensor.",
+                        sensorId);
             }
         }
 
-        // Получаем все сценарии хаба
+        // Retrieve all scenarios for the hub
         List<Scenario> scenarios = scenarioRepository.findAllByHubId(hubId);
 
-
-        // Получаем все условия
+        // Retrieve all conditions
         List<ScenarioCondition> allConditions = conditionRepository.findAllByScenarioIn(scenarios);
 
         Map<Scenario, List<ScenarioCondition>> conditionsByScenario = allConditions.stream()
                 .collect(Collectors.groupingBy(ScenarioCondition::getScenario));
 
-        // Проверяем каждый сценарий
+        // Evaluate each scenario
         for (Scenario scenario : scenarios) {
             List<ScenarioCondition> conditions = conditionsByScenario.getOrDefault(scenario, List.of());
 
             boolean allMatch = conditions.stream().allMatch(condition -> {
                 String sensorId = condition.getSensor().getId();
                 SensorStateAvro stateAvro = sensorStates.get(sensorId);
+
                 if (stateAvro == null) {
-                    log.debug("Нет данных от сенсора {} для сценария {}", sensorId, scenario.getName());
+                    log.debug("No data received from sensor {} for scenario {}", sensorId, scenario.getName());
                     return false;
                 }
 
@@ -90,7 +90,7 @@ public class SnapshotServiceImpl implements SnapshotService {
             });
 
             if (allMatch) {
-                log.info("Условия сценария '{}' выполнены, отправляем действия", scenario.getName());
+                log.info("Scenario '{}' conditions are met. Sending actions.", scenario.getName());
 
                 List<ScenarioAction> actions = actionRepository.findAllByScenario(scenario);
                 for (ScenarioAction action : actions) {
@@ -109,7 +109,7 @@ public class SnapshotServiceImpl implements SnapshotService {
                             .build();
 
                     hubRouterClient.handleDeviceAction(request);
-                    log.info("Отправлено действие для сенсора {}: {}", action.getSensor().getId(), action.getAction());
+                    log.info("Action sent for sensor {}: {}", action.getSensor().getId(), action.getAction());
                 }
             }
         }
@@ -147,7 +147,7 @@ public class SnapshotServiceImpl implements SnapshotService {
             };
         }
 
-        log.warn("Не удалось сопоставить тип {} с payload {}", type, payload.getClass().getSimpleName());
+        log.warn("Unable to map condition type {} to payload {}", type, payload.getClass().getSimpleName());
         return null;
     }
 

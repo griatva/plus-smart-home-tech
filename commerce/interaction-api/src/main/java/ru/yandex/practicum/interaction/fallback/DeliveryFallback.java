@@ -13,28 +13,28 @@ public class DeliveryFallback implements DeliveryClient {
 
     @Override
     public DeliveryDto planDelivery(DeliveryDto deliveryDto) {
-        System.out.println("Fallback: planDelivery — сервис доставки недоступен, доставка не создана.");
+        System.out.println("Fallback: planDelivery — delivery service is unavailable, delivery was not created.");
         return emptyDeliveryDto(deliveryDto);
     }
 
     @Override
     public void deliverySuccessful(UUID orderId) {
-        System.out.println("Fallback: deliverySuccessful — сервис доставки недоступен, отметка успешной доставки не выполнена.");
+        System.out.println("Fallback: deliverySuccessful — delivery service is unavailable, successful delivery status was not set.");
     }
 
     @Override
     public void deliveryPicked(UUID orderId) {
-        System.out.println("Fallback: deliveryPicked — сервис доставки недоступен, отметка получения заказа в доставку не выполнена.");
+        System.out.println("Fallback: deliveryPicked — delivery service is unavailable, order pickup status was not set.");
     }
 
     @Override
     public void deliveryFailed(UUID orderId) {
-        System.out.println("Fallback: deliveryFailed — сервис доставки недоступен, отметка неудачной доставки не выполнена.");
+        System.out.println("Fallback: deliveryFailed — delivery service is unavailable, failed delivery status was not set.");
     }
 
     @Override
     public BigDecimal calculateDeliveryCost(OrderDto orderDto) {
-        System.out.println("Fallback: calculateDeliveryCost — сервис доставки недоступен, возвращаем стоимость доставки 0.");
+        System.out.println("Fallback: calculateDeliveryCost — delivery service is unavailable, returning delivery cost 0.");
         return BigDecimal.ZERO;
     }
 

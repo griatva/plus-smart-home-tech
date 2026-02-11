@@ -40,7 +40,7 @@ public class WarehouseServiceImpl implements WarehouseService {
         Optional<WarehouseItem> item = warehouseRepository.findByProductId(request.getProductId());
         if (item.isPresent()) {
             throw new SpecifiedProductAlreadyInWarehouseException(
-                    "Товар с таким id: " + request.getProductId() + " уже существует в БД");
+                    "Product with id: " + request.getProductId() + " already exists in the database");
         }
 
         warehouseRepository.save(WarehouseItemMapper.toNewEntity(request));
@@ -55,7 +55,7 @@ public class WarehouseServiceImpl implements WarehouseService {
         List<WarehouseItem> items = warehouseRepository.findAllByProductIdIn(productIds);
 
         if (items.size() < productIds.size()) {
-            throw new ProductInShoppingCartNotInWarehouse("Не все товары найдены на складе");
+            throw new ProductInShoppingCartNotInWarehouse("Not all products were found in the warehouse");
         }
 
         checkProductQuantity(items, products);
@@ -69,7 +69,7 @@ public class WarehouseServiceImpl implements WarehouseService {
                 .sum();
 
         double deliveryVolume = items.stream()
-                .mapToDouble(item -> item.getWidth() * item.getHeight() * item.getDepth()) // не ясно, какие единицы измерения
+                .mapToDouble(item -> item.getWidth() * item.getHeight() * item.getDepth()) // clarify measurement units
                 .sum();
 
         boolean fragile = items.stream()
@@ -84,7 +84,7 @@ public class WarehouseServiceImpl implements WarehouseService {
     }
 
     private static void checkProductQuantity(List<WarehouseItem> items, Map<UUID, Long> products) {
-        Map<UUID, Long> lowQuantityProducts = new HashMap<>(); // Long - реально оставшееся количество
+        Map<UUID, Long> lowQuantityProducts = new HashMap<>(); // Long - actual remaining quantity in stock
 
         for (WarehouseItem item : items) {
             UUID productId = item.getProductId();
@@ -98,10 +98,10 @@ public class WarehouseServiceImpl implements WarehouseService {
         }
 
         if (!lowQuantityProducts.isEmpty()) {
-            StringBuilder errorMessage = new StringBuilder("На складе недостаточно товаров:\n");
+            StringBuilder errorMessage = new StringBuilder("Not enough products in stock:\n");
             lowQuantityProducts.forEach((productId, quantity) ->
-                    errorMessage.append("Продукт ID: ").append(productId)
-                            .append(" — остаток на складе: ").append(quantity)
+                    errorMessage.append("Product ID: ").append(productId)
+                            .append(" — available in stock: ").append(quantity)
                             .append("\n")
             );
             throw new ProductInShoppingCartLowQuantityInWarehouse(errorMessage.toString());
@@ -112,7 +112,7 @@ public class WarehouseServiceImpl implements WarehouseService {
     @Override
     public void addProduct(AddProductToWarehouseRequest request) {
         WarehouseItem item = warehouseRepository.findByProductId(request.getProductId())
-                .orElseThrow(() -> new NoSpecifiedProductInWarehouseException("Нет информации о товаре на складе"));
+                .orElseThrow(() -> new NoSpecifiedProductInWarehouseException("No information about the product in the warehouse"));
 
         item.setQuantity(item.getQuantity() + request.getQuantity());
 
@@ -135,7 +135,7 @@ public class WarehouseServiceImpl implements WarehouseService {
     public void shippedToDelivery(ShippedToDeliveryRequest request) {
 
         OrderBooking orderBooking = bookingRepository.findByOrderId(request.getOrderId())
-                .orElseThrow(() -> new NotFoundException("Бронь для этого заказа не найдена"));
+                .orElseThrow(() -> new NotFoundException("Booking for this order was not found"));
 
         orderBooking.setDeliveryId(request.getDeliveryId());
         bookingRepository.save(orderBooking);
@@ -148,13 +148,13 @@ public class WarehouseServiceImpl implements WarehouseService {
         Map<UUID, Long> productsForReturn = request.getProducts();
 
         if (productsForReturn == null || productsForReturn.isEmpty()) {
-            throw new IllegalArgumentException("Нет товаров для возврата.");
+            throw new IllegalArgumentException("No products provided for return");
         }
 
         List<WarehouseItem> items = warehouseRepository.findAllByProductIdIn(new ArrayList<>(productsForReturn.keySet()));
 
         if (items.size() != productsForReturn.size()) {
-            throw new IllegalArgumentException("Некоторые товары из возврата не найдены в базе склада.");
+            throw new IllegalArgumentException("Some returned products were not found in the warehouse database.");
         }
 
         for (WarehouseItem item : items) {
@@ -177,13 +177,13 @@ public class WarehouseServiceImpl implements WarehouseService {
         List<WarehouseItem> items = warehouseRepository.findAllByProductIdIn(productIds);
 
         if (items.size() < productIds.size()) {
-            throw new NotFoundException("Не все товары найдены на складе");
+            throw new NotFoundException("Not all products were found in the warehouse");
         }
 
-        //проверяем количество на складе
+        // Check available stock quantities
         checkProductQuantity(items, products);
 
-        //уменьшаем количество на складе
+        // Decrease stock quantities
         for (WarehouseItem item : items) {
             Long bookQuantity = products.get(item.getProductId());
             if (bookQuantity == null) {
@@ -194,7 +194,7 @@ public class WarehouseServiceImpl implements WarehouseService {
         warehouseRepository.saveAll(items);
 
 
-        //создаем и сохраняем бронь
+        // Create and save a booking
         OrderBooking orderBooking = OrderBooking.builder()
                 .orderId(request.getOrderId())
                 .products(request.getProducts())

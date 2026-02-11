@@ -47,10 +47,9 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderMapper mapper;
 
-
     @Override
     public Page<OrderDto> getClientOrdersPaginated(String username, int page, int size) {
-        //авторизация пользователя (пока что проверяем, что имя не пустое) - 401 NotAuthorizedUserException
+        // User authorization (for now, we only check that the username is not empty) — 401 NotAuthorizedUserException
         checkUserName(username);
         Pageable pageRequest = PageRequest.of(page, size);
 
@@ -61,25 +60,24 @@ public class OrderServiceImpl implements OrderService {
 
     private void checkUserName(String userName) {
         if (userName == null || userName.isBlank()) {
-            throw new NotAuthorizedUserException("Имя пользователя не должно быть пустым!");
+            throw new NotAuthorizedUserException("Username must not be empty");
         }
     }
-
 
     @Transactional
     @Override
     public OrderDto createNewOrder(CreateNewOrderRequest request) {
 
-        //создаем новый заказ, заполняем уже имеющимися данными: cartId, products, state
+        // Create a new order and populate it with existing data: cartId, products, state
         ShoppingCartDto shoppingCart = request.getShoppingCart();
         AddressDto deliveryAddress = request.getDeliveryAddress();
 
         if (shoppingCart.getProducts() == null || shoppingCart.getProducts().isEmpty()) {
-            throw new IllegalArgumentException("Нельзя создать заказ: корзина пуста.");
+            throw new IllegalArgumentException("Cannot create order: shopping cart is empty.");
         }
 
         if (deliveryAddress == null) {
-            throw new IllegalArgumentException("Адрес доставки не указан.");
+            throw new IllegalArgumentException("Delivery address is not specified.");
         }
 
         Order order = Order.builder()
@@ -91,7 +89,7 @@ public class OrderServiceImpl implements OrderService {
         order = orderRepository.save(order);
         UUID orderId = order.getOrderId();
 
-        //собираем заказ на складе, получаем вес, объем, хрупкость
+        // Assemble the order in the warehouse and get weight, volume, and fragility info
         AssemblyProductsForOrderRequest bookRequest = AssemblyProductsForOrderRequest.builder()
                 .orderId(orderId)
                 .products(shoppingCart.getProducts())
@@ -102,10 +100,10 @@ public class OrderServiceImpl implements OrderService {
         order.setDeliveryVolume(bookedProductsDto.getDeliveryVolume());
         order.setFragile(bookedProductsDto.getFragile());
 
-        //получаем со склада адрес
+        // Get warehouse address
         AddressDto fromAddress = warehouseClient.getWarehouseAddress();
 
-        //создаем доставку и добавляем ее id в order
+        // Create delivery and store its id in the order
         DeliveryDto deliveryDtoToPlan = DeliveryDto.builder()
                 .fromAddress(fromAddress)
                 .toAddress(deliveryAddress)
@@ -114,42 +112,38 @@ public class OrderServiceImpl implements OrderService {
                 .build();
 
         DeliveryDto deliveryDtoCreated = deliveryClient.planDelivery(deliveryDtoToPlan);
-
         order.setDeliveryId(deliveryDtoCreated.getDeliveryId());
 
-        //отправляем запрос в деливери, чтобы получить стоимость доставки
+        // Request delivery cost from the delivery service
         BigDecimal deliveryCost = deliveryClient.calculateDeliveryCost(mapper.toDto(order));
-
         order.setDeliveryPrice(deliveryCost);
 
-        //отправляем запрос в payment, чтобы получить стоимость товаров и общую стоимость
+        // Request product cost and total cost from the payment service
         BigDecimal productCost = paymentClient.calculateProductCost(mapper.toDto(order));
         order.setProductPrice(productCost);
 
         BigDecimal totalCost = paymentClient.calculateTotalCost(mapper.toDto(order));
         order.setTotalPrice(totalCost);
 
-        //создаем payment, получаем его id
+        // Create payment and store its id
         PaymentDto paymentDto = paymentClient.createPayment(mapper.toDto(order));
         order.setPaymentId(paymentDto.getPaymentId());
 
-        //устанавливаем статус заказа в состояние ON_PAYMENT, т.к. мы "запустили" оплату, создав payment
+        // Set order status to ON_PAYMENT because payment has been initiated
         order.setState(OrderState.ON_PAYMENT);
 
         return mapper.toDto(orderRepository.save(order));
     }
-
 
     @Transactional
     @Override
     public OrderDto returnProduct(ProductReturnRequest productReturnRequest) {
 
         UUID orderId = productReturnRequest.getOrderId();
-
         Order order = getOrderById(orderId);
 
         if (order.getState() != OrderState.DELIVERED) {
-            throw new ProductReturnException("Заказ не доставлен, возврат невозможен");
+            throw new ProductReturnException("Order has not been delivered, return is not possible");
         }
 
         Map<UUID, Long> productsToReturn = productReturnRequest.getProducts();
@@ -157,10 +151,12 @@ public class OrderServiceImpl implements OrderService {
 
         boolean isReturnExistsInOrder = orderProducts.keySet().containsAll(productsToReturn.keySet());
         if (!isReturnExistsInOrder) {
-            throw new IllegalArgumentException("В заказе отсутствуют некоторые из указанных товаров для возврата.");
+            throw new IllegalArgumentException(
+                    "Some of the specified products for return are not present in the order."
+            );
         }
 
-        //логика по возврату денег не зафиксирована.
+        // Refund logic is not implemented yet.
 
         ProductReturnMapRequest returnMapRequest = ProductReturnMapRequest.builder()
                 .products(productsToReturn)
@@ -171,7 +167,6 @@ public class OrderServiceImpl implements OrderService {
         return mapper.toDto(orderRepository.save(order));
     }
 
-
     @Transactional
     @Override
     public OrderDto payment(UUID orderId) {
@@ -179,7 +174,6 @@ public class OrderServiceImpl implements OrderService {
         order.setState(OrderState.PAID);
         return mapper.toDto(orderRepository.save(order));
     }
-
 
     @Transactional
     @Override
@@ -219,18 +213,15 @@ public class OrderServiceImpl implements OrderService {
         Order order = getOrderById(orderId);
         BigDecimal totalCost = paymentClient.calculateTotalCost(mapper.toDto(order));
         order.setTotalPrice(totalCost);
-
         return mapper.toDto(orderRepository.save(order));
     }
 
     @Transactional
     @Override
     public OrderDto calculateDeliveryCost(UUID orderId) {
-
         Order order = getOrderById(orderId);
         BigDecimal deliveryCost = deliveryClient.calculateDeliveryCost(mapper.toDto(order));
         order.setDeliveryPrice(deliveryCost);
-
         return mapper.toDto(orderRepository.save(order));
     }
 
@@ -252,6 +243,8 @@ public class OrderServiceImpl implements OrderService {
 
     private Order getOrderById(UUID orderId) {
         return orderRepository.findByOrderId(orderId)
-                .orElseThrow(() -> new NoOrderFoundException("Заказ с ID " + orderId + " не найден"));
+                .orElseThrow(() ->
+                        new NoOrderFoundException("Order with id " + orderId + " was not found")
+                );
     }
 }

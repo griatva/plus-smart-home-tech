@@ -19,9 +19,9 @@ public class KafkaSnapshotProducer {
         ProducerRecord<String, SensorsSnapshotAvro> record = new ProducerRecord<>(topic, key, message);
         producer.send(record, (metadata, exception) -> {
             if (exception != null) {
-                log.error("Ошибка при отправке снапшота в Kafka: {}", exception.getMessage(), exception);
+                log.error("Error sending snapshot to Kafka: {}", exception.getMessage(), exception);
             } else {
-                log.info("Снапшот успешно отправлен в Kafka: topic={}, partition={}, offset={}, key={}",
+                log.info("Snapshot successfully sent to Kafka: topic={}, partition={}, offset={}, key={}",
                         metadata.topic(), metadata.partition(), metadata.offset(), key);
             }
         });
@@ -34,5 +34,4 @@ public class KafkaSnapshotProducer {
     public void flush() {
         producer.flush();
     }
-
 }

@@ -33,14 +33,14 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleBadRequest(final Exception e) {
         logException(e, HttpStatus.BAD_REQUEST);
-        return buildApiError(e, "Ошибка в запросе", HttpStatus.BAD_REQUEST);
+        return buildApiError(e, "Bad request", HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleValidationException(final MethodArgumentNotValidException e) {
         logException(e, HttpStatus.BAD_REQUEST);
-        return buildApiError(e, "Запрос составлен некорректно", HttpStatus.BAD_REQUEST);
+        return buildApiError(e, "Request validation failed", HttpStatus.BAD_REQUEST);
     }
 
     // ---------- 401 UNAUTHORIZED ----------
@@ -48,7 +48,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ApiError handleUnauthorized(final NotAuthorizedUserException e) {
         logException(e, HttpStatus.UNAUTHORIZED);
-        return buildApiError(e, "Пользователь не авторизован", HttpStatus.UNAUTHORIZED);
+        return buildApiError(e, "User is not authorized", HttpStatus.UNAUTHORIZED);
     }
 
     // ---------- 404 NOT_FOUND ----------
@@ -61,7 +61,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ApiError handleNotFound(final Exception e) {
         logException(e, HttpStatus.NOT_FOUND);
-        return buildApiError(e, "Объект не найден", HttpStatus.NOT_FOUND);
+        return buildApiError(e, "Resource not found", HttpStatus.NOT_FOUND);
     }
 
     // ---------- 409 CONFLICT ----------
@@ -72,7 +72,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.CONFLICT)
     public ApiError handleConflict(final Exception e) {
         logException(e, HttpStatus.CONFLICT);
-        return buildApiError(e, "Конфликт данных", HttpStatus.CONFLICT);
+        return buildApiError(e, "Data conflict", HttpStatus.CONFLICT);
     }
 
     // ---------- 502 BAD_GATEWAY ----------
@@ -80,7 +80,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_GATEWAY)
     public ApiError handleBadGateway(final QuantityStateUpdateException e) {
         logException(e, HttpStatus.BAD_GATEWAY);
-        return buildApiError(e, "Ошибка при обновлении количества товара", HttpStatus.BAD_GATEWAY);
+        return buildApiError(e, "Error while updating product quantity", HttpStatus.BAD_GATEWAY);
     }
 
     // ------- 500 INTERNAL_SERVER_ERROR -----
@@ -88,13 +88,13 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ApiError handleUnknownException(final Exception e) {
         logException(e, HttpStatus.INTERNAL_SERVER_ERROR);
-        return buildApiError(e, "Неизвестная ошибка", HttpStatus.INTERNAL_SERVER_ERROR);
+        return buildApiError(e, "Unknown error", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     private void logException(Exception e, HttpStatus status) {
         StringWriter sw = new StringWriter();
         e.printStackTrace(new PrintWriter(sw));
-        log.error("Ошибка: {} - {}", status, sw);
+        log.error("Error: {} - {}", status, sw);
     }
 
     private ApiError buildApiError(Exception e, String userMessage, HttpStatus status) {

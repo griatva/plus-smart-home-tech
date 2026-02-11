@@ -16,73 +16,73 @@ public class OrderFallback implements OrderClient {
 
     @Override
     public Page<OrderDto> getClientOrders(String username, int page, int size) {
-        System.out.println("Fallback: getClientOrders — сервис заказов недоступен, возвращаем пустую страницу заказов.");
+        System.out.println("Fallback: getClientOrders — order service is unavailable, returning an empty page of orders.");
         return new PageImpl<>(Collections.emptyList());
     }
 
     @Override
     public OrderDto createNewOrder(CreateNewOrderRequest request) {
-        System.out.println("Fallback: createNewOrder — сервис заказов недоступен, заказ не создан.");
+        System.out.println("Fallback: createNewOrder — order service is unavailable, order was not created.");
         return emptyOrderDto();
     }
 
     @Override
     public OrderDto productReturn(ProductReturnRequest request) {
-        System.out.println("Fallback: productReturn — сервис заказов недоступен, возврат не выполнен.");
+        System.out.println("Fallback: productReturn — order service is unavailable, product return was not performed.");
         return emptyOrderDto();
     }
 
     @Override
     public OrderDto payment(UUID orderId) {
-        System.out.println("Fallback: payment — сервис заказов недоступен, оплата не зафиксирована.");
+        System.out.println("Fallback: payment — order service is unavailable, payment was not recorded.");
         return emptyOrderDto();
     }
 
     @Override
     public OrderDto paymentFailed(UUID orderId) {
-        System.out.println("Fallback: paymentFailed — сервис заказов недоступен, ошибка оплаты не зафиксирована.");
+        System.out.println("Fallback: paymentFailed — order service is unavailable, payment failure was not recorded.");
         return emptyOrderDto();
     }
 
     @Override
     public OrderDto delivery(UUID orderId) {
-        System.out.println("Fallback: delivery — сервис заказов недоступен, доставка не зафиксирована.");
+        System.out.println("Fallback: delivery — order service is unavailable, delivery was not recorded.");
         return emptyOrderDto();
     }
 
     @Override
     public OrderDto deliveryFailed(UUID orderId) {
-        System.out.println("Fallback: deliveryFailed — сервис заказов недоступен, ошибка доставки не зафиксирована.");
+        System.out.println("Fallback: deliveryFailed — order service is unavailable, delivery failure was not recorded.");
         return emptyOrderDto();
     }
 
     @Override
     public OrderDto complete(UUID orderId) {
-        System.out.println("Fallback: complete — сервис заказов недоступен, завершение заказа не зафиксировано.");
+        System.out.println("Fallback: complete — order service is unavailable, order completion was not recorded.");
         return emptyOrderDto();
     }
 
     @Override
     public OrderDto calculateTotalCost(UUID orderId) {
-        System.out.println("Fallback: calculateTotalCost — сервис заказов недоступен, стоимость не рассчитана.");
+        System.out.println("Fallback: calculateTotalCost — order service is unavailable, total cost was not calculated.");
         return emptyOrderDto();
     }
 
     @Override
     public OrderDto calculateDeliveryCost(UUID orderId) {
-        System.out.println("Fallback: calculateDeliveryCost — сервис заказов недоступен, стоимость доставки не рассчитана.");
+        System.out.println("Fallback: calculateDeliveryCost — order service is unavailable, delivery cost was not calculated.");
         return emptyOrderDto();
     }
 
     @Override
     public OrderDto assembly(UUID orderId) {
-        System.out.println("Fallback: assembly — сервис заказов недоступен, сборка не зафиксирована.");
+        System.out.println("Fallback: assembly — order service is unavailable, assembly was not recorded.");
         return emptyOrderDto();
     }
 
     @Override
     public OrderDto assemblyFailed(UUID orderId) {
-        System.out.println("Fallback: assemblyFailed — сервис заказов недоступен, ошибка сборки не зафиксирована.");
+        System.out.println("Fallback: assemblyFailed — order service is unavailable, assembly failure was not recorded.");
         return emptyOrderDto();
     }
 

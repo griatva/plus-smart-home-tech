@@ -28,19 +28,19 @@ public class WarehouseItem {
     private UUID productId;
 
     @Column(name = "width", nullable = false)
-    private Double width; // ширина
+    private Double width;
 
     @Column(name = "height", nullable = false)
-    private Double height; // высота
+    private Double height;
 
     @Column(name = "depth", nullable = false)
-    private Double depth; // глубина
+    private Double depth;
 
     @Column(name = "weight", nullable = false)
-    private Double weight; // вес
+    private Double weight;
 
     @Column(name = "fragile")
-    private Boolean fragile; // признак хрупкости
+    private Boolean fragile;
 
     @Column(name = "quantity", nullable = false)
     private long quantity = 0;

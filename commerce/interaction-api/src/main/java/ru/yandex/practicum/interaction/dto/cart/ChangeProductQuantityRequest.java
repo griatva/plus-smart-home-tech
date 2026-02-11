@@ -13,10 +13,10 @@ import java.util.UUID;
 @Builder
 public class ChangeProductQuantityRequest {
 
-    @NotNull(message = "productId не может быть null")
+    @NotNull(message = "productId must not be null")
     private UUID productId;
 
-    @NotNull(message = "newQuantity не может быть null")
+    @NotNull(message = "newQuantity must not be null")
     @PositiveOrZero
     private Long newQuantity;
 }

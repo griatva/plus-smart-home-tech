@@ -94,7 +94,8 @@ public class StoreServiceImpl implements StoreService {
 
     private Product getById(UUID productId) {
         return repository.findById(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Товар с id " + productId + " не найден в БД!"));
+                .orElseThrow(() -> new ProductNotFoundException("Product with id " + productId +
+                        " was not found in the database"));
     }
 
     @Override

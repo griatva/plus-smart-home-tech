@@ -27,32 +27,32 @@ public class PaymentController {
 
     @PostMapping
     public ResponseEntity<PaymentDto> createPayment(@RequestBody @Valid OrderDto orderDto) {
-        log.info("Получен запрос на формирование оплаты для заказа: {}", orderDto);
+        log.info("Received request to create payment for order: {}", orderDto);
         return ResponseEntity.ok(paymentService.createPayment(orderDto));
     }
 
     @PostMapping("/totalCost")
     public ResponseEntity<BigDecimal> calculateTotalCost(@RequestBody @Valid OrderDto orderDto) {
-        log.info("Получен запрос на расчет полной стоимости заказа: {}", orderDto);
+        log.info("Received request to calculate total cost for order: {}", orderDto);
         return ResponseEntity.ok(paymentService.calculateTotalCost(orderDto));
     }
 
     @PostMapping("/refund")
     public ResponseEntity<Void> markPaymentSuccess(@RequestBody UUID paymentId) {
-        log.info("Получен запрос на отметку успешной оплаты: {}", paymentId);
+        log.info("Received request to mark payment as successful, paymentId = {}", paymentId);
         paymentService.markPaymentSuccess(paymentId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/productCost")
     public ResponseEntity<BigDecimal> calculateProductCost(@RequestBody @Valid OrderDto orderDto) {
-        log.info("Получен запрос на расчет стоимости товаров в заказе: {}", orderDto);
+        log.info("Received request to calculate product cost for order: {}", orderDto);
         return ResponseEntity.ok(paymentService.calculateProductCost(orderDto));
     }
 
     @PostMapping("/failed")
     public ResponseEntity<Void> markPaymentFailed(@RequestBody UUID paymentId) {
-        log.info("Получен запрос на отметку неудачной оплаты: {}", paymentId);
+        log.info("Received request to mark payment as failed, paymentId = {}", paymentId);
         paymentService.markPaymentFailed(paymentId);
         return ResponseEntity.ok().build();
     }

@@ -19,7 +19,7 @@ public class CustomErrorDecoder implements ErrorDecoder {
         try {
             if (response.body() != null) {
                 String body = new String(response.body().asInputStream().readAllBytes(), StandardCharsets.UTF_8);
-                log.error("Feign ошибка при вызове {}: {}", methodKey, body);
+                log.error("Feign error while calling {}: {}", methodKey, body);
 
                 String exceptionName = extractField(body, "\"exception\":\"", "\"");
                 String reason = extractField(body, "\"reason\":\"", "\"");
@@ -57,14 +57,14 @@ public class CustomErrorDecoder implements ErrorDecoder {
                         case "ConflictException":
                             return new ConflictException(reason);
                         default:
-                            log.warn("Неизвестная ошибка по reason: {}, возвращаю RuntimeException", exceptionName);
-                            return new RuntimeException("Ошибка: " + (reason != null ? reason : "Unknown error"));
+                            log.warn("Unknown error with reason: {}, returning RuntimeException", exceptionName);
+                            return new RuntimeException("Error: " + (reason != null ? reason : "Unknown error"));
                     }
                 }
             }
         } catch (IOException e) {
-            log.error("Ошибка при чтении тела ответа Feign", e);
-            return new RuntimeException("Ошибка при обработке ответа Feign", e);
+            log.error("Error while reading Feign response body", e);
+            return new RuntimeException("Error while processing Feign response", e);
         }
         return defaultDecoder.decode(methodKey, response);
     }

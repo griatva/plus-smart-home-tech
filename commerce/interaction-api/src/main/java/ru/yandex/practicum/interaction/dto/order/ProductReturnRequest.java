@@ -14,9 +14,9 @@ import java.util.UUID;
 @NoArgsConstructor
 public class ProductReturnRequest {
 
-    @NotNull(message = "id заказа обязателен")
+    @NotNull(message = "orderId is required")
     private UUID orderId;
 
-    @NotEmpty(message = "Список товаров для возврата не может быть пустым")
+    @NotEmpty(message = "The list of products for return must not be empty")
     private Map<UUID, Long> products;
 }

@@ -25,34 +25,34 @@ public class DeliveryController {
 
     @PutMapping
     public ResponseEntity<DeliveryDto> planDelivery(@RequestBody @Valid DeliveryDto deliveryDto) {
-        log.info("Получен запрос на создание доставки: {}", deliveryDto);
+        log.info("Received request to plan delivery: {}", deliveryDto);
         return ResponseEntity.ok(service.planDelivery(deliveryDto));
     }
 
     @PostMapping("/successful")
     public ResponseEntity<Void> deliverySuccessful(@RequestBody UUID orderId) {
-        log.info("Получен запрос на эмуляцию успешной доставки для заказа: {}", orderId);
+        log.info("Received request to emulate successful delivery for orderId = {}", orderId);
         service.markDeliverySuccessful(orderId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/picked")
     public ResponseEntity<Void> deliveryPicked(@RequestBody UUID orderId) {
-        log.info("Получен запрос на эмуляцию получения заказа в доставку: {}", orderId);
+        log.info("Received request to emulate order pickup for delivery, orderId = {}", orderId);
         service.markDeliveryPicked(orderId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/failed")
     public ResponseEntity<Void> deliveryFailed(@RequestBody UUID orderId) {
-        log.info("Получен запрос на эмуляцию неудачной доставки для заказа: {}", orderId);
+        log.info("Received request to emulate failed delivery for orderId = {}", orderId);
         service.markDeliveryFailed(orderId);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/cost")
     public ResponseEntity<BigDecimal> calculateDeliveryCost(@RequestBody @Valid OrderDto orderDto) {
-        log.info("Получен запрос на расчёт стоимости доставки для заказа: {}", orderDto);
+        log.info("Received request to calculate delivery cost for order: {}", orderDto);
         return ResponseEntity.ok(service.calculateDeliveryCost(orderDto));
     }
 }

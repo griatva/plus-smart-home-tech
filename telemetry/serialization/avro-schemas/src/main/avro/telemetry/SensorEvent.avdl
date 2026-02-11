@@ -2,33 +2,33 @@
 protocol SensorEventProtocol {
 
     record ClimateSensorAvro {
-        /** температура в градусах Цельсия */
+        /** temperature in degrees Celsius */
         int temperature_c;
 
-        /**  уровень влажности */
+        /** humidity level */
         int humidity;
 
-        /** уровень углекислого газа */
+        /** carbon dioxide (CO2) level */
         int co2_level;
     }
 
     record LightSensorAvro {
 
-        /** качество сигнала связи */
+        /** signal link quality */
         int link_quality;
 
-        /** уровень освещённости */
+        /** illumination level */
         int luminosity;
     }
 
     record MotionSensorAvro {
-        /** качество сигнала связи */
+        /** signal link quality */
         int link_quality;
 
-        /** обнаружено ли движение */
+        /** indicates whether motion is detected */
         boolean motion;
 
-        /** уровень напряжения */
+        /** voltage level */
         int voltage;
     }
 

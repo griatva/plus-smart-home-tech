@@ -51,7 +51,7 @@ public class DeliveryServiceImpl implements DeliveryService {
     public DeliveryDto planDelivery(DeliveryDto deliveryDto) {
 
         if (deliveryRepository.existsByOrderId(deliveryDto.getOrderId())) {
-            throw new ConflictException("Доставка для заказа с orderId " + deliveryDto.getOrderId() + " уже существует.");
+            throw new ConflictException("Delivery for order with orderId " + deliveryDto.getOrderId() + " already exists");
         }
 
         Address fromCandidate = addressMapper.toEntity(deliveryDto.getFromAddress());
@@ -165,11 +165,11 @@ public class DeliveryServiceImpl implements DeliveryService {
 
     private Delivery getDeliveryByOrderId(UUID orderId) {
         return deliveryRepository.findByOrderId(orderId)
-                .orElseThrow(() -> new NoDeliveryFoundException("Доставка заказа с ID " + orderId + " не найдена"));
+                .orElseThrow(() -> new NoDeliveryFoundException("Delivery for order with id " + orderId + " was not found"));
     }
 
     private Delivery getByDeliveryId(UUID deliveryId) {
         return deliveryRepository.findByDeliveryId(deliveryId)
-                .orElseThrow(() -> new NoDeliveryFoundException("Доставка с ID " + deliveryId + " не найдена"));
+                .orElseThrow(() -> new NoDeliveryFoundException("Delivery with id " + deliveryId + " was not found"));
     }
 }

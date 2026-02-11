@@ -30,13 +30,11 @@ public class HubEventProcessor implements Runnable {
 
     private final Map<TopicPartition, OffsetAndMetadata> currentOffsets = new HashMap<>();
 
-
     @Override
     public void run() {
-        log.info("HubEventProcessor запущен в потоке: {}", Thread.currentThread().getName());
+        log.info("HubEventProcessor started on thread: {}", Thread.currentThread().getName());
 
         Runtime.getRuntime().addShutdownHook(new Thread(hubEventKafkaConsumer::wakeup));
-
 
         try {
             hubEventKafkaConsumer.subscribe(List.of(TOPIC));
@@ -44,18 +42,18 @@ public class HubEventProcessor implements Runnable {
             while (true) {
                 ConsumerRecords<String, HubEventAvro> records = hubEventKafkaConsumer.poll(POLL_TIMEOUT);
                 if (!records.isEmpty()) {
-                    log.info("Получено {} сообщений от Kafka", records.count());
+                    log.info("Received {} messages from Kafka", records.count());
                 }
 
                 int count = 0;
                 for (ConsumerRecord<String, HubEventAvro> record : records) {
 
                     try {
-                        log.info("Обработка HubEvent: ключ={}, offset={}, partition={}",
+                        log.info("Processing HubEvent: key={}, offset={}, partition={}",
                                 record.key(), record.offset(), record.partition());
                         service.handleHubEventRecord(record);
                     } catch (Exception e) {
-                        log.error("Ошибка при обработке события от хаба: {}", record, e);
+                        log.error("Error while processing hub event: {}", record, e);
                     }
 
                     currentOffsets.put(
@@ -67,18 +65,19 @@ public class HubEventProcessor implements Runnable {
                         commitAsyncSafe();
                     }
                 }
+
                 commitAsyncSafe();
                 currentOffsets.clear();
             }
         } catch (WakeupException ignored) {
-            log.info("Получен сигнал на завершение работы HubEventProcessor.");
+            log.info("Shutdown signal received for HubEventProcessor.");
         } catch (Exception e) {
-            log.error("Ошибка во время обработки событий от хаба", e);
+            log.error("Error while processing hub events", e);
         } finally {
             try {
                 hubEventKafkaConsumer.commitSync(currentOffsets);
             } finally {
-                log.info("Закрываем HubEvenConsumer");
+                log.info("Closing HubEvent consumer");
                 hubEventKafkaConsumer.close();
             }
         }
@@ -87,7 +86,7 @@ public class HubEventProcessor implements Runnable {
     private void commitAsyncSafe() {
         hubEventKafkaConsumer.commitAsync(currentOffsets, (offsets, ex) -> {
             if (ex != null) {
-                log.warn("Ошибка при коммите оффсетов HubEventProcessor: {}", offsets, ex);
+                log.warn("Error committing offsets in HubEventProcessor: {}", offsets, ex);
             }
         });
     }

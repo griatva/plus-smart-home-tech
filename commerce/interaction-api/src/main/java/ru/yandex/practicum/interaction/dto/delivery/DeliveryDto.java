@@ -16,15 +16,15 @@ public class DeliveryDto {
 
     private UUID deliveryId;
 
-    @NotNull(message = "Адрес склада не должен быть null")
+    @NotNull(message = "Warehouse address must not be null")
     private AddressDto fromAddress;
 
-    @NotNull(message = "Адрес получателя не должен быть null")
+    @NotNull(message = "Recipient address must not be null")
     private AddressDto toAddress;
 
-    @NotNull(message = "orderId не должен быть null")
+    @NotNull(message = "orderId must not be null")
     private UUID orderId;
 
-    @NotNull(message = "Статус доставки не должен быть null")
+    @NotNull(message = "Delivery status must not be null")
     private DeliveryState deliveryState;
 }
